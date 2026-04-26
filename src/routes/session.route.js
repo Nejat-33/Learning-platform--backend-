@@ -8,7 +8,7 @@ const sessionRouter = express.Router()
 
 sessionRouter.get('/getsingle/:id', authenticate,rolevalidate('admin', 'instructor'), getsingleSession)
 sessionRouter.get('/batch/:batchid', authenticate ,rolevalidate('admin', 'instructor') ,getSessionBybatch)
-sessionRouter.post('/create', authenticate, rolevalidate('admin','instructor'), createsession)
+sessionRouter.post('/create/:batchid', authenticate, rolevalidate('admin','instructor'), createsession)
 sessionRouter.patch('/close/:id',authenticate,rolevalidate('admin', 'instructor') , closesession)
 
 

@@ -28,8 +28,6 @@ const AttendanceSchema = new mongoose.Schema({
 }, {timestamps: true})
 
 
-// this is compound unique index used to prevent duplicate attendence 
-// like same student to donot mark for the same batch on the same date
 AttendanceSchema.index(
   { batch: 1, student: 1, date: 1 },
   { unique: true }

@@ -18,12 +18,10 @@ export const checkout = async (req, res) => {
 
 
 
-
 export const verify = async (req, res) => {
 
   const { tx_ref } = req.query;
   
-
   if (!tx_ref) {
     return res.status(400).json({ message: "tx_ref required" });
   }

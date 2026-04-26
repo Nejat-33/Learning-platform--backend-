@@ -5,7 +5,7 @@ import rolevalidate from '../middlewares/role.middleware.js'
 
 const courseRoute = express.Router()
 
-courseRoute.post('/courses',authenticate,rolevalidate('admin'), createcourse)
+courseRoute.post('/create',authenticate,rolevalidate('admin'), createcourse)
 courseRoute.get('/getallcourse', getallCourse)
 courseRoute.get('/courses/:id', getCourse)
 courseRoute.get('/new_realese', new_realease_courses)

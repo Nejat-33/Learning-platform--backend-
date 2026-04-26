@@ -19,14 +19,13 @@ authRouter.get('/google', passport.authenticate('google', {
 
 authRouter.post('/google', googleLogin)
 authRouter.get('/google/callback', (req, res, next) => {
-    console.log("LOG 1: Google sent the user back to the server");
-    console.log("Full URL hit:", req.originalUrl);
+
     next();
 }, passport.authenticate('google', { 
     session: false,
     failureRedirect: '/login'
 }), (req, res) => {
-    console.log("LOG 2: Passport successfully verified the user");
+
     googleAuthCallback(req, res);
 });
 

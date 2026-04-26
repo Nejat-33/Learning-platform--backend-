@@ -1,18 +1,26 @@
 import { createCourse , deletecourse, getallcourse, getcourse,getnewCourse, modifycourse} from "../services/courseservice.js"
+import { createbatch } from "../services/batch.service.js"
 
 
 export const createcourse = async(req, res, next)=>{
     try {
-         const result = await createCourse(req.body, req.user._id)
+        const {title, description, durationInWeeks, passingScore, batchName, price, startDate, endDate, maxStudent, batch_format} = req.body
+        const coursePayload = {title, description, durationInWeeks, passingScore}
+
+        const new_course = await createCourse(coursePayload, req.user._id)
+
+         const batchpayload = {course: new_course._id,batchName, startDate, endDate, maxStudent, batch_format, price}
+
+         const batch = await createbatch(batchpayload, req.user._id)
+
     res.status(201).json({
         success: true,
-        message: 'course created successfully',
-        data: result
+        message: 'course and batch created successfully',
+        data: new_course
     })
     } catch (error) {
         next(error)
-    }
-   
+    }  
 }
 
 export const getallCourse  = async(req, res, next) =>{
@@ -32,7 +40,6 @@ export const getallCourse  = async(req, res, next) =>{
 export const modifyCourse = async (req, res, next)=>{
     try {
         const {id} = req.params
-        console.log("id ", id);
     
         const result = await modifycourse(id, req.body, req.user._id)
 
@@ -41,6 +48,7 @@ export const modifyCourse = async (req, res, next)=>{
             message: "course modified sucessfully",
             data: result
         })
+        
     } catch (error) {
         next(error)
     }

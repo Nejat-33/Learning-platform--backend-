@@ -45,7 +45,7 @@ export const googleAuthCallback = async (req, res) => {
 
 export const signup = async(req, res, next)=>{
    try {
-      const {firstname,lastname, email, password, passwordConfirm, role} = req.body
+      const {firstname,lastname, email, password, passwordConfirm, role, instructorProfile} = req.body
       const exist = await User.findOne({email})
       if(exist){
          throw new AppError("user is already registered", 400)
@@ -57,7 +57,11 @@ export const signup = async(req, res, next)=>{
           password,
           passwordConfirm,
           role,
-          provider: 'local'
+          provider: 'local',
+          instructorProfile: {
+            bio: instructorProfile?.bio || "",
+            specialty: instructorProfile?.specialty || ""
+          }
       })
      await createSendtoken(newuser, 201, res)
    } catch (error) {

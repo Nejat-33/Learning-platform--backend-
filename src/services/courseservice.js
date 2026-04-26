@@ -35,8 +35,7 @@ export const getcourse = async (id) =>{
 
 
 export const modifycourse = async(id, updatedData, userid)=>{
-    console.log("id in midd", id);
-    
+ 
     const course = await Course.findOne({_id: id, isDeleted: false})
     
     if(!course) throw new AppError('canot get course', 404)
@@ -68,7 +67,6 @@ export const deletecourse = async(id)=>{
 export const getnewCourse = async()=>{
     const course = await Course.find({
         status: "published"
-        
     }).sort({createdAt: -1}).limit(5)
     console.log("course in the service: ", course);
     

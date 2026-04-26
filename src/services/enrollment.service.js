@@ -10,19 +10,18 @@ import {generateCertificate }from './certificate.service.js'
 
 
 export const createenrollment = async(studentid, batchid)=>{
+
     const batch = await Batch.findById(batchid).populate("course")
     if(!batch) throw new AppError('batch not found', 404)
 
     if(batch.status == 'ongoing' || batch.status == 'completed'){
-        throw new AppError('batch is not available')
+        throw new AppError('batch is not available', 400)
     }
-    
     const courseid = batch.course._id
     const duplicate = await Enrollment.findOne({
         batch: batchid,
         student: studentid
     })
-    
     if(duplicate) throw new AppError('user already registered', 400)
 
     const updatebatch = await Batch.findOneAndUpdate({
@@ -31,14 +30,11 @@ export const createenrollment = async(studentid, batchid)=>{
         {$inc: {currentStudent: 1}},
         {new: true}
     )
-
     if(!updatebatch) throw new AppError('batch is full or no longer available', 400)
-    
     const enrollment = await Enrollment.create({
         batch: batchid,
         student: studentid
     })
-
     return enrollment
 }
 

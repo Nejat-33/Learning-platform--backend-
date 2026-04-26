@@ -1,5 +1,7 @@
 
+
 import mongoose from "mongoose";
+import slugify from "slugify";
 
 const CourseSchema = new mongoose.Schema({
 
@@ -42,7 +44,8 @@ const CourseSchema = new mongoose.Schema({
         type: String
     },
     passingScore: {
-        type: Number
+        type: Number,
+        required: true
     },
 
     isDeleted: {
@@ -52,9 +55,11 @@ const CourseSchema = new mongoose.Schema({
     }
 }, {timestamps: true})
 
-CourseSchema.pre('save', function(next) {
-  this.slug = slugify(this.title, { lower: true });
-  next();
+CourseSchema.pre('save', async function () {
+  if (this.isModified('title')) {
+    this.slug = slugify(this.title, { lower: true });
+  }
+  
 });
 
 const Course = mongoose.model('Course', CourseSchema)

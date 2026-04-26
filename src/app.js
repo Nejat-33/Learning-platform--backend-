@@ -15,6 +15,8 @@ import './config/passport.js'
 import batchRoute from './routes/batch.route.js'
 import analyticsRouter from './routes/analytics.route.js'
 import cors from 'cors'
+import Rerouter from './routes/resource.route.js'
+import Inqrouter from './routes/inquiry.route.js'
 
 const app = express()
 
@@ -25,7 +27,7 @@ app.use(cors({
 }));
 app.use(express.json())
 
-
+app.use('/uploads', express.static('uploads'))
 app.use(passport.initialize())
 
 app.use('/api/auth', authRouter)
@@ -38,6 +40,8 @@ app.use('/api/attendance', attendenceRoute)
 app.use('/api/analytics',  analyticsRouter)
 app.use('/api/dashboard', dashboardRoute)
 app.use('/api/batch', batchRoute)
+app.use('/api/resourses', Rerouter)
+app.use('/api/inquiry', Inqrouter)
 
 app.use(errorMiddleware)
 app.use(notFoundmiddleware)

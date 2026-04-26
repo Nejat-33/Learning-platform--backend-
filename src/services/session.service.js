@@ -4,7 +4,7 @@ import User from "../models/user.model.js"
 import AppError from "../utils/customerror.handler.js"
 import crypto from 'crypto'
 import { updateSessionAnalytics } from "./analytics.service.js"
-
+import { markAbsentStudents } from "./attendence.service.js"
 
 export const createSession = async(batchid, instructorid) =>{
 
@@ -60,6 +60,9 @@ export const endSession = async (sessionid, user) =>{
  
     session.isActive = false
     await session.save()
+    console.log("gonna mark absent student");
+    
+    await markAbsentStudents(sessionid, session.batch)
     await updateSessionAnalytics(session.batch)
     return session
 }

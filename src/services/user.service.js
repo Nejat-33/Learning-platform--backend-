@@ -38,3 +38,16 @@ export const deleteuser = async (id) =>{
    user.isActive = false
    return user
 }
+
+
+
+export const modifyprofile = async(id, updateddata)=>{
+     const user = await User.findOne({_id:id, isDeleted: false})
+
+     if (!user){
+        throw new AppError("user is not found", 404)
+     }
+     const updateduser = await User.findByIdAndUpdate(id, {$set: updateddata}, {new: true})
+
+     return updateduser
+}

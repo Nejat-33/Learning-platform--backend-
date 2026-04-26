@@ -6,7 +6,7 @@ import { authenticate } from "../middlewares/auth.middleware.js"
 const enrollmentRoute = express.Router()
 
 enrollmentRoute.get('/get',authenticate, rolevalidate('admin'), getEnrollment)
-enrollmentRoute.post('/create', authenticate, createEnrollment)
+enrollmentRoute.post('/create/:batchid', authenticate, createEnrollment)
 enrollmentRoute.get('/batch/:batchid',authenticate,rolevalidate('admin', 'instructor'), getEnrollmentbyBatch)
 enrollmentRoute.get('/student/:studentid',authenticate,rolevalidate('admin') ,getEnrollmentofStudent)
 enrollmentRoute.get('/getmy',authenticate, getmyenrollment)

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 const BatchSchema = new mongoose.Schema({
+    
     course : {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Course',
@@ -60,6 +61,11 @@ const BatchSchema = new mongoose.Schema({
        default: "upcoming",
        index: true
     },
+    batch_format:{
+       type: String,
+       enum: ["weekday-intensive", "weekend-only", "self-placed"],
+       required: true
+    },
     room: {
         type: String
     },
@@ -67,6 +73,9 @@ const BatchSchema = new mongoose.Schema({
         type: Number,
         required: [true, 'A course must have a price'],
         min : 0,
+    },
+    image: {
+        type: String
     },
     isDeleted: {
         type: Boolean,

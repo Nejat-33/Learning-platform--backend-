@@ -33,11 +33,11 @@ const UserSchema = new mongoose.Schema({
         required: [function () { return this.provider === 'local' && !this.googleId; }],
         validate: {
             validator: function(el) {
-                // Only validate if provider is local and password exists
+                
                 if (this.provider === 'local' && this.password) {
                     return el === this.password;
                 }
-                return true; // Skip validation for OAuth users
+                return true;
             },
             message: 'Passwords are not the same!'
         }
@@ -50,6 +50,10 @@ const UserSchema = new mongoose.Schema({
     },
     phone: {
         type: String,
+    },
+    instructorProfile: {
+    bio: { type: String, default: "" },
+    specialty: { type: String, default: "" } 
     },
     profileImage:{
         type: String,

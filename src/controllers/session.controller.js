@@ -4,11 +4,11 @@ import { createSession, endSession, getSessionbybatch, getsinglesession } from "
 
 export const createsession = async(req, res, next) =>{
    try {
-    const {batch}= req.body
+    const {batchid}= req.params
     const instructor = req.user._id
 
     
-   const result = await createSession(batch, instructor)
+   const result = await createSession(batchid, instructor)
 
    res.status(201).json({
     sucess: true,

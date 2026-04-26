@@ -1,5 +1,5 @@
 
-import { getcoursestat, getGlobalCompletionRate, getGlobalPlatformStats, getinstructorinfo, getrevenuestat, getstudentstat } from "../services/analytics.service.js"
+import { getcoursestat, getGlobalCompletionRate, getGlobalPlatformStats,getselectedInsAnalytics, getinstructorinfo, getrevenuestat, getstudentstat } from "../services/analytics.service.js"
 
 
 export const getInstructorAnalytics = async(req, res, next)=>{
@@ -15,6 +15,21 @@ export const getInstructorAnalytics = async(req, res, next)=>{
         next(e)
     }
 
+}
+
+export const selectedInsAnalytics = async (req, res, next)=>{
+    try {
+        const {id} = req.params
+        const result = await getselectedInsAnalytics(id)
+
+        res.status(200).json({
+            success: true,
+            message: "successfully get instructor data",
+            data: result
+        })
+    } catch (error) {
+        next(error)
+    }
 }
 
 export const getStudentAnalytics = async(req, res, next) =>{
@@ -58,6 +73,10 @@ export const getCourseAnalytics = async(req, res, next)=>{
     }
 }
 
+
+
+
+
 export const getpaltformAnalyt = async (req, res, next)=>{
    try {
       const data = await getGlobalPlatformStats()
@@ -72,6 +91,9 @@ export const getpaltformAnalyt = async (req, res, next)=>{
     next(error)
    }
 }
+
+
+
 export const globalcomplition = async (req, res, next)=>{
     try {
         const rate = await getGlobalCompletionRate()

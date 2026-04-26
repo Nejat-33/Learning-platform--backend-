@@ -1,3 +1,4 @@
+import { modifycourse } from "../services/courseservice.js"
 import { deleteuser, getAlluser, getme, getuser } from "../services/user.service.js"
 
 
@@ -55,5 +56,20 @@ export const deleteUser = async(req, res, next) =>{
         })
     }catch(error){
       next(error)
+    }
+}
+
+export const updateProfile = async (req, res, next) =>{
+    try {
+        const {id} = req.params
+        const result = await modifycourse(id, req.body)
+
+        res.status(200).json({
+            sucess: true,
+            message: "successfully modified profile",
+            data: result
+        })
+    } catch (error) {
+        next(error)
     }
 }

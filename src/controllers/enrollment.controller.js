@@ -4,8 +4,8 @@ import { checkcompletion, createenrollment, Getenrollment, getenrollmentbybatch,
 export const createEnrollment = async(req, res, next) =>{
     try {        
         const student = req.user._id
-        const {batch } = req.body
-         const result = await createenrollment(student, batch)
+        const {batchid } = req.params
+         const result = await createenrollment(student, batchid)
      
          res.status(201).json({
              success: true,

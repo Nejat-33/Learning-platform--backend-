@@ -137,8 +137,8 @@ export const updateSessionAnalytics = async(batchid)=>{
 }
 
 
-export const getinstructorinfo = async (id)=>{
-  const user = await User.findOne({instructor: id})
+export const getinstructorinfo = async(id)=>{
+  const user = await User.findOne(id)
   
   if(!user) throw new AppError('instructor is not found')
   const stat = await Analytics.find({
@@ -149,6 +149,21 @@ export const getinstructorinfo = async (id)=>{
    if(!stat) throw new AppError('no stat for this instructor')
 
     return stat
+}
+
+export const getselectedInsAnalytics = async(id)=>{
+    const batch = await Batch.findOne({_id: id})
+    if(!batch) throw new AppError("batch is not found ", 404)
+    const instructor = batch.instructor
+
+    const stat = await Analytics.find({
+      type: "instructor",
+      instructor,
+      period: "overall",
+    }).select("totalSessionConducted totalAttendence totalStudentAttended totalStudent")
+    
+    if(!stat) throw new AppError("no stat for this user")
+      return stat
 }
 
 export const getstudentstat = async(id)=>{
@@ -264,8 +279,3 @@ export const getGlobalPlatformStats = async () => {
     };
 };
 
-
-
-
-
- 
