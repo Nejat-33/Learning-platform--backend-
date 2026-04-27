@@ -12,6 +12,27 @@ export const getAlluser = async(query)=>{
     return users
 }
 
+export const countActiveuser = async()=>{
+   const countactiveuser = await User.countDocuments({isActive: true})
+   const countactiveStudent = await User.countDocuments({role: 'student', isActive: true})
+   const countactiveinstructor = await User.countDocuments({role: 'instructor', isActive: true})
+   const countactiveadmin = await User.countDocuments({role: 'admin', isActive: true})
+
+   
+   const number = {
+            "Totalactiveuser": countactiveuser,
+            "numberofActiveinstructor": countactiveinstructor,
+            "numberofActiveadmin" : countactiveadmin,
+            "numberofActivestudent": countactiveStudent
+        }
+
+   return number
+}
+
+
+
+
+
 export const getuser = async(id)=>{
    const user = await User.findOne(id)
    if(!user) {

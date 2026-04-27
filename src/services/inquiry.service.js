@@ -34,3 +34,4 @@ export const answerinquiry = async(id,responseMessage, userid)=>{
     return inquiry
 
 }
+

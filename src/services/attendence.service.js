@@ -119,7 +119,7 @@ export const attendanceheatmap = async () => {
     }
   ]);
 
-  console.log("Heatmap with Batch Names:", heatmap);
+
   return heatmap;
 };
 

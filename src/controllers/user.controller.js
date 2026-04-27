@@ -1,5 +1,5 @@
 import { modifycourse } from "../services/courseservice.js"
-import { deleteuser, getAlluser, getme, getuser } from "../services/user.service.js"
+import {  countActiveuser, deleteuser, getAlluser, getme, getuser } from "../services/user.service.js"
 
 
 export const getalluser = async(req, res, next) =>{
@@ -67,6 +67,19 @@ export const updateProfile = async (req, res, next) =>{
         res.status(200).json({
             sucess: true,
             message: "successfully modified profile",
+            data: result
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const CountActiveuser = async(req, res, next)=>{
+    try {
+        const result = await countActiveuser()
+        res.status(200).json({
+            success: true,
+            message: "you have sucessfully get number of active user",
             data: result
         })
     } catch (error) {
