@@ -1,5 +1,5 @@
 import { modifycourse } from "../services/courseservice.js"
-import {  countActiveuser, deleteuser, getAlluser, getme, getuser } from "../services/user.service.js"
+import {  countActiveuser, deleteuser, getAlluser, getinstructor, getme, getuser } from "../services/user.service.js"
 
 
 export const getalluser = async(req, res, next) =>{
@@ -81,6 +81,19 @@ export const CountActiveuser = async(req, res, next)=>{
             success: true,
             message: "you have sucessfully get number of active user",
             data: result
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const getallinstructor = async(req, res, next)=>{
+    try {
+        const instructor = await getinstructor()
+
+        res.status(200).json({
+            success: true,
+            data: instructor
         })
     } catch (error) {
         next(error)

@@ -6,10 +6,15 @@ const AttendanceSchema = new mongoose.Schema({
         ref: 'Users',
         required: true,
     },
+    batch: {
+       type : mongoose.Schema.Types.ObjectId,
+       ref: 'batch',
+       required :  true,
+    },
     session: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Session',
-        required: true
+        required: true,
     },
     status:{
         type: String,

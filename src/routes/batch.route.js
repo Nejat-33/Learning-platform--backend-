@@ -1,7 +1,12 @@
 import express from "express";
-import { createBatch, deleteBatch, getAllBatches, getBatchforcourse, getSinglebatch, updateBatch, get_upcomingBatches, getAllbatch_course, getFilling_batch } from "../controllers/batch.controller.js";
+import { createBatch, deleteBatch, getAllBatches, getBatchforcourse, 
+    getSinglebatch, updateBatch, get_upcomingBatches, getAllbatch_course, 
+    getFilling_batch, getStatofbatch, batchAverageAttendanceController, Singlebatchstat, 
+    getAverageAttendedStudentsController,
+    getWeeklyTrendsController} from "../controllers/batch.controller.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
 import rolevalidate from "../middlewares/role.middleware.js";
+import { getAverageAttendedStudents } from "../services/batch.service.js";
 
 
 const batchRoute = express.Router()
@@ -15,5 +20,10 @@ batchRoute.delete('/deletebatch/:id', authenticate, rolevalidate('admin', 'instr
 batchRoute.get("/upcoming", get_upcomingBatches)
 batchRoute.get("/batches/course/:id", getAllbatch_course)
 batchRoute.get("/fillingsoon", getFilling_batch)
+batchRoute.get("/batchstat",authenticate,rolevalidate('admin'), getStatofbatch)
+batchRoute.get('/averageattendance/:batchId', batchAverageAttendanceController)
+batchRoute.get("/singlebatchstat/:batchid", Singlebatchstat)
+batchRoute.get('/avgAttendancecount/:batchId', getAverageAttendedStudentsController)
+batchRoute.get('/getWeeklyTrends/:batchId', getWeeklyTrendsController)
 
 export default batchRoute

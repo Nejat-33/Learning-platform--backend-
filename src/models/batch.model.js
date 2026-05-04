@@ -30,21 +30,18 @@ const BatchSchema = new mongoose.Schema({
         required: true,
     },
     schedule: {
-        type: [
-            {
-                type: String,
-                enum: [
-                    'Monday',
-                    'Tuesday',
-                    "Wednesday",
-                    'Thursday',
-                    'Friday',
-                    'Saturday',
-                    'Sunday'
-                ]
-            }
-        ],
-        time: String,
+        days: {
+            type: [String],
+            enum: [
+                'Monday', 'Tuesday', 'Wednesday', 'Thursday', 
+                'Friday', 'Saturday', 'Sunday'
+            ],
+            required: true
+        },
+        time: {
+            type: String,
+            required: true
+        },
     },
     maxStudent: {
        type: Number,
@@ -55,9 +52,14 @@ const BatchSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    graduates: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Users",
+        default: []
+    },
     status: {
        type: String,
-       enum: ['upcoming', 'ongoing', 'completed', "cancelled"],
+       enum: ['upcoming', 'ongoing', 'completed', "cancelled", "active"],
        default: "upcoming",
        index: true
     },
@@ -85,6 +87,6 @@ const BatchSchema = new mongoose.Schema({
 }, {timestamps: true})
 
 
-const Batch = mongoose.model('batch', BatchSchema)
+const Batch = mongoose.model('Batch', BatchSchema)
 
 export default Batch

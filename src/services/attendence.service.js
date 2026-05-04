@@ -43,6 +43,7 @@ export const markAttendaance = async(studentid, scannedToken)=>{
    }
    const marked = await Attendence.create({
      student: studentid,
+     batch: session.batch._id,
      session: session._id,
      batch: session.batch._id,
      date: now,
@@ -61,7 +62,6 @@ export const attendanceheatmap = async () => {
   const heatmap = await Attendence.aggregate([
     { $match: { isDeleted: false } },
     
-    // 1. Group (Your working logic)
     {
       $group: {
         _id: {
@@ -76,7 +76,6 @@ export const attendanceheatmap = async () => {
       }
     },
 
-    // 2. Convert Session ID to ObjectId and Join Sessions
     {
       $lookup: {
         from: "sessions", 
@@ -89,7 +88,6 @@ export const attendanceheatmap = async () => {
     },
     { $unwind: { path: "$sessionDoc", preserveNullAndEmptyArrays: true } },
 
-    // 3. Join Batches using the batch ID from sessionDoc
     {
       $lookup: {
         from: "batches",
@@ -100,11 +98,9 @@ export const attendanceheatmap = async () => {
     },
     { $unwind: { path: "$batchDoc", preserveNullAndEmptyArrays: true } },
 
-    // 4. Final Projection
     {
       $project: {
         _id: 0,
-        // If batchDoc.name is missing, it will show "Unnamed Batch" so we can debug
         name: { $ifNull: ["$batchDoc.batchName", "Unknown Batch"] }, 
         week: "$_id.week",
         year: "$_id.year",
@@ -142,12 +138,15 @@ export const markAbsentStudents = async (sessionId, batchid) => {
             return !isPresent; 
         })
         .map(enrollment => ({
+            batch: batchid,
             student: enrollment.student,
             session: sessionId,
             status: 'absent'
         }));
 
+  
   if (absentStudents.length > 0) {
        const attendendance=  await Attendence.insertMany(absentStudents);  
+       console.log("attendence ", attendendance);
   }
 };

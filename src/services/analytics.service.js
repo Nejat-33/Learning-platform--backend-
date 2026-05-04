@@ -235,11 +235,9 @@ export const getcoursestat = async(id)=>{
   const stat = await Analytics.find({
    type: 'course',
     course: id,
-    period: 'overall'}).select('totalCompleted totalRevenue totalEnrollment totalSession')
+    period: 'overall'}).select('totalCompleted totalEnrollment totalSession')
 
   if(!stat) throw new AppError("there is no stat for the this course", 404)
- 
-  
 
     return stat
 }

@@ -1,4 +1,10 @@
-import { createbatch, deletebatch, getAllbatches, getbatchesforcourse, fetchBatchService, getUpcomingBatches, getFillingSoon_batch } from "../services/batch.service.js"
+import { createbatch, deletebatch, getAllbatches, 
+    getbatchesforcourse, fetchBatchService, getUpcomingBatches,
+     getFillingSoon_batch, getstat,getBatchAverageAttendance, totalsessionofbatch ,
+    getAtRiskStudents,
+    singlebatchstat,
+    getAverageAttendedStudents,
+    getWeeklyAttendanceTrends} from "../services/batch.service.js"
 
 
 export const getSinglebatch = async(req, res, next)=>{
@@ -139,4 +145,104 @@ export const getFilling_batch = async(req, res, next)=>{
     }
 }
 
+export const getStatofbatch = async(req, res, next)=>{
+    try {
+        const stat = await getstat()
+        
+        res.status(200).json({
+            sucess: true,
+            message: "successfully get batch statistics",
+            data: stat
+        })
+    } catch (error) {
+        next(error)
+    }
+}
 
+
+export const batchTotalsession = async(req,res, next)=>{
+    try {
+        const {batchid} = req.params
+
+        const stat = await totalsessionofbatch(batchid)
+
+        res.status(200).json({
+            sucess: true,
+            data: stat
+        })
+    } catch (error) {
+        
+    }
+}
+
+export const batchAverageAttendanceController = async (req, res, next) => {
+    try {
+        const { batchId } = req.params; 
+
+        console.log(" batch id ", batchId);
+        
+        const attendanceData = await getBatchAverageAttendance(batchId);
+
+        res.status(200).json({
+            success: true,
+            data: attendanceData
+        });
+    } catch (error) {
+        next(error); 
+    }
+};
+
+
+export const Singlebatchstat = async (req, res, next) => {
+    try {
+        const { batchid } = req.params;
+        const threshold = parseInt(req.query.threshold) || 75;
+
+        const atRiskStudents = await getAtRiskStudents(batchid, threshold);
+        const batchsta = await singlebatchstat(batchid)
+
+        const stats = {
+            atRiskStudents,
+            no_atriskstudents : atRiskStudents.length,
+            batchsta
+        }
+
+        res.status(200).json({
+            success: true,
+            data: stats
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+export const getAverageAttendedStudentsController = async (req, res, next) => {
+    try {
+        const { batchId } = req.params;
+        
+        const attendanceData = await getAverageAttendedStudents(batchId);
+
+        res.status(200).json({
+            success: true,
+            data: attendanceData
+        });
+    } catch (error) {
+        next(error); // Passes error to your error-handling middleware
+    }
+};
+
+
+export const getWeeklyTrendsController = async (req, res, next) => {
+    try {
+        const { batchId } = req.params;
+        const data = await getWeeklyAttendanceTrends(batchId);
+
+        res.status(200).json({
+            success: true,
+            data
+        });
+    } catch (error) {
+        next(error);
+    }
+};

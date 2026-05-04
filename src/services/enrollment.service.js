@@ -50,6 +50,7 @@ export const checkcompletion = async(enrollmentid)=>{
 
     const studentAttendence = await Attendence.countDocuments({
         student: enrollment.student._id,
+        status: "present",
         session: {$in : sessionids}
     })
 
@@ -60,7 +61,7 @@ export const checkcompletion = async(enrollmentid)=>{
     const totalStudentattendence = (studentAttendence/totalSession)*100
 
     const payment = await Payment.findOne({enrollment: enrollmentid})
-    const ispaid = payment.status == 'paid'
+    const ispaid = payment?.status == 'paid'
 
    if (enrollment.finalGrade === undefined || enrollment.finalGrade === null) {
     throw new AppError("The final Grade has not been submitted", 400);
@@ -69,11 +70,19 @@ export const checkcompletion = async(enrollmentid)=>{
     const ispassing = enrollment.finalGrade  >= enrollment.batch.course.passingScore
 
     if(totalStudentattendence >= 50 && ispaid && ispassing){
-     const data =  await makeenrollment(enrollmentid)
+     const data =  await makeenrollmentcompleted(enrollmentid)
+     await Batch.findByIdAndUpdate(
+            batchId,
+            { 
+                $addToSet: { graduates: enrollment.staudent._id } 
+            },
+            { new: true }
+        )
+
      await updateCompletionAnalytics(
-       enrollment.batch.course, 
+       enrollment.batch.course._id, 
        enrollment.batch._id, 
-       enrollment.student
+       enrollment.student._id
    );
      return data
     } else {
@@ -82,10 +91,9 @@ export const checkcompletion = async(enrollmentid)=>{
 }
 
 
-export const makeenrollment = async(enrollmentid)=>{
+export const makeenrollmentcompleted = async(enrollmentid)=>{
    const enrollment = await Enrollment.findById(enrollmentid)
-    .populate({path: 'batch', populate: {path: 'course'}})
-        .populate('student')
+    
    if(!enrollment) throw new Error('enrollment not found')
     enrollment.status = 'completed'
 await enrollment.save();
@@ -97,8 +105,8 @@ await enrollment.save();
 
 
 export const updatefinalGrade = async(enrollmentid, finalGrade)=>{
-    const enrollment = await Enrollment.findById(enrollmentid)
-    if(!enrollment) throw new Error('enrollment is not found')
+    const enrollment = await Enrollment.findOne({_id: enrollmentid, status : "active"})
+    if(!enrollment) throw new AppError('enrollment is not found', 404)
      enrollment.finalGrade = finalGrade
     
      await enrollment.save();

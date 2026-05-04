@@ -1,5 +1,8 @@
+import Attendence from "../models/attendence.model.js"
+import Batch from "../models/batch.model.js"
 import User from "../models/user.model.js"
 import AppError from "../utils/customerror.handler.js"
+import { totalsessionofbatch } from "./batch.service.js"
 
 
 
@@ -28,10 +31,6 @@ export const countActiveuser = async()=>{
 
    return number
 }
-
-
-
-
 
 export const getuser = async(id)=>{
    const user = await User.findOne(id)
@@ -71,4 +70,38 @@ export const modifyprofile = async(id, updateddata)=>{
      const updateduser = await User.findByIdAndUpdate(id, {$set: updateddata}, {new: true})
 
      return updateduser
+}
+
+
+export const attendanceData = async(id,batchid)=>{
+    const user = await User.findOne({_id: id, isDeleted: false})
+
+    if(!user){
+       throw new AppError("user is not found", 404)
+    }
+    const batch = await Batch.find({_id: batchid})
+    if(!batch){
+        throw new AppError("batch is not found", 404)
+    }
+
+    const totalsession = await totalsessionofbatch(batchid)
+    if (!totalsession){
+        throw new AppError("there is session yet", 400)
+    }
+    const totalpresent = await Attendence.find({student: id, batch: batchid, status: 'present'})
+    let isrisky = false
+
+    if ((totalpresent/totalsession)*100 < 75){
+        isrisky = true
+    }
+    
+}
+
+
+export const getinstructor = async()=>{
+    const instructor = await User.find({role: "instructor", isActive : true})
+    if(!instructor){
+        throw new AppError("cnnot get instructor ", 404)
+    }
+    return instructor
 }
