@@ -1,6 +1,6 @@
 import express from 'express'
 import passport from 'passport'
-import { authenticate, googleLogin, login, logout} from '../middlewares/auth.middleware.js'
+import { authenticate, googleLogin, login, logout, refreash} from '../middlewares/auth.middleware.js'
 import { signup } from '../controllers/auth.controller.js'
 import { googleAuthCallback } from '../controllers/auth.controller.js'
 import { changePassword, forgotPassword, resetPassword } from '../controllers/password.controller.js'
@@ -40,6 +40,7 @@ authRouter.get('/test-forgot', (req, res) => res.send("Route is alive!"));
 authRouter.patch('/forgotpassword', forgotPassword)
 authRouter.patch('/changepassword', authenticate, changePassword)
 authRouter.patch('/resetpassword/:token', resetPassword)
+authRouter.post('/refresh', refreash)
 
 
 export default authRouter

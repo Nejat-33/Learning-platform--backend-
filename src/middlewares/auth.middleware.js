@@ -126,15 +126,29 @@ export const googleLogin = async (req, res) => {
 };
 
 
-export const logout = async (req , res, next)=>{
-    res.cookie('refreash token','logout', {
-        expires: new Date(0),
-        secure: process.env.NODE_ENV == 'production',
-        sameSite: 'None',
-        httpOnly: true
-    })
-    res.status(200).json({
-        success: true,
-        message: 'successfully logout'
-    })
-}
+// export const logout = async (req , res, next)=>{
+//     res.cookie('refreash token','logout', {
+//         expires: new Date(0),
+//         secure: process.env.NODE_ENV == 'production',
+//         sameSite: 'None',
+//         httpOnly: true
+//     })
+//     res.status(200).json({
+//         success: true,
+//         message: 'successfully logout'
+//     })
+// }
+export const logout = async (req, res, next) => {
+    try {
+        // Clear the refresh token cookie by setting its expiration to the past
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            secure: false, // match your development setup
+            sameSite: 'lax'
+        });
+        
+        res.status(200).json({ success: true, message: "Logged out successfully" });
+    } catch (error) {
+        next(error);
+    }
+};

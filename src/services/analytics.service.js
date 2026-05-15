@@ -3,6 +3,7 @@ import Batch from "../models/batch.model.js"
 import Course from "../models/course.model.js"
 import Enrollment from "../models/enrollment.model.js"
 import User from "../models/user.model.js"
+import Session from "../models/session.model.js"
 import AppError from "../utils/customerror.handler.js"
 
 
@@ -171,13 +172,58 @@ export const getstudentstat = async(id)=>{
   const student= await User.findOne(id)
    if(!student) throw new AppError('student is not found', 404)
 
-   const stat = await Analytics.findOne({type: 'student', student: id, period: "overall"})
-   .select('sessionAttended courseEnrolled completionRate period student');
+  const stat = await Analytics.findOne({type: 'student', student: id, period: "overall"})
+   .select('sessionAttended courseEnrolled completionRate period student totalCompletions');
+
    if(!stat){
-    throw new AppError("can not get student analytics data")
+    // If no analytics doc exists yet, return sensible defaults
+    return {
+      sessionAttended: 0,
+      courseEnrolled: 0,
+      completionRate: 0,
+      totalCompletions: 0,
+      period: 'overall',
+      student: id
+    }
    }
 
-    return stat
+   // Ensure courseEnrolled is accurate: fallback to counting enrollments
+   try{
+     const courseEnrolledCount = await Enrollment.countDocuments({ student: id, isDeleted: false, status: { $in: ['active','completed'] } })
+     if(!stat.courseEnrolled || stat.courseEnrolled === 0){
+       stat.courseEnrolled = courseEnrolledCount
+     }
+   }catch(err){
+     // ignore and keep existing stat.courseEnrolled
+   }
+
+  // Compute attendanceRate based on sessions attended vs total sessions in enrolled batches
+  try{
+    const enrollments = await Enrollment.find({ student: id }).select('batch')
+    const batchIds = enrollments.map(e => e.batch).filter(Boolean)
+    let totalSessions = 0
+    if(batchIds.length > 0){
+      totalSessions = await Session.countDocuments({ batch: { $in: batchIds } })
+    }
+
+    const sessionsAttended = Number(stat?.sessionAttended) || 0
+    let attendanceRate = totalSessions > 0 ? Math.round((sessionsAttended / totalSessions) * 100) : 0
+    // cap at 100%
+    attendanceRate = Math.max(0, Math.min(100, attendanceRate))
+
+    // expose attendanceRate and totalSessions, and set completionRate for frontend compatibility
+    stat.attendanceRate = attendanceRate
+    stat.totalSessions = totalSessions
+    stat.completionRate = attendanceRate
+  }catch(err){
+    // if session counting fails, fallback to sessionAttended raw value
+    const sessionsAttended = Number(stat?.sessionAttended) || 0
+    stat.attendanceRate = sessionsAttended
+    stat.totalSessions = 0
+    stat.completionRate = stat.attendanceRate
+  }
+
+  return stat
 }
 
 export const getrevenuestat = async()=>{

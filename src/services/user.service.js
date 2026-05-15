@@ -62,7 +62,7 @@ export const deleteuser = async (id) =>{
 
 
 export const modifyprofile = async(id, updateddata)=>{
-     const user = await User.findOne({_id:id, isDeleted: false})
+     const user = await User.findOne({_id:id, isActive: true})
 
      if (!user){
         throw new AppError("user is not found", 404)

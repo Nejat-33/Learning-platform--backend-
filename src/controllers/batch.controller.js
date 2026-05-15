@@ -1,11 +1,15 @@
+import Enrollment from "../models/enrollment.model.js"
+import Session from "../models/session.model.js"
 import { createbatch, deletebatch, getAllbatches, 
     getbatchesforcourse, fetchBatchService, getUpcomingBatches,
      getFillingSoon_batch, getstat,getBatchAverageAttendance, totalsessionofbatch ,
     getAtRiskStudents,
     singlebatchstat,
     getAverageAttendedStudents,
-    getWeeklyAttendanceTrends} from "../services/batch.service.js"
-
+    getWeeklyAttendanceTrends,
+    getallbatchofinstructor} from "../services/batch.service.js"
+import mongoose from "mongoose"
+import Batch from "../models/batch.model.js"
 
 export const getSinglebatch = async(req, res, next)=>{
     try {
@@ -179,8 +183,6 @@ export const batchAverageAttendanceController = async (req, res, next) => {
     try {
         const { batchId } = req.params; 
 
-        console.log(" batch id ", batchId);
-        
         const attendanceData = await getBatchAverageAttendance(batchId);
 
         res.status(200).json({
@@ -228,7 +230,7 @@ export const getAverageAttendedStudentsController = async (req, res, next) => {
             data: attendanceData
         });
     } catch (error) {
-        next(error); // Passes error to your error-handling middleware
+        next(error);
     }
 };
 
@@ -242,6 +244,57 @@ export const getWeeklyTrendsController = async (req, res, next) => {
             success: true,
             data
         });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+export const getmybatch = async(req, res, next)=>{
+
+    try {
+        const enrollments = await Enrollment.find({
+            student: req.user._id,
+            isDeleted: false
+        })
+        .populate({
+            path: 'batch',
+            populate: [
+                { path: 'instructor', select: 'firstname lastname' },
+                { path: 'course',     select: 'title' }
+            ]
+        })
+        .lean();
+
+        const result = await Promise.all(
+            enrollments
+                .filter(e => e.batch && !e.batch.isDeleted)
+                .map(async e => {
+                    const sessions = await Session.find({ batch: e.batch._id })
+                        .sort({ createdAt: -1 })
+                        .limit(10)
+                        .lean();
+                    return { batch: e.batch, sessions };
+                })
+        );
+
+        res.status(200).json({ success: true, data: result });
+    } catch (err) {
+        next(err);
+    }
+}
+export const getbatchInst = async (req, res, next) => {
+    try {
+        const id = new mongoose.Types.ObjectId(req.user._id.toString());
+        console.log('instructor id:', id, typeof id);
+        
+        const batches = await Batch.find({ instructor: id, isDeleted: false });
+        console.log('batches found:', batches.length);
+               
+        const sample = await Batch.findOne({}).select('instructor').lean();
+        console.log('sample batch instructor field:', sample?.instructor);
+        
+        res.status(200).json({ success: true, data: batches });
     } catch (error) {
         next(error);
     }

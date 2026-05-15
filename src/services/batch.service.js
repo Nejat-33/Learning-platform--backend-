@@ -10,13 +10,11 @@ import Attendence from "../models/attendence.model.js"
 
 export const createbatch = async(payload, user_id)=>{
 
-   const {course, batchName, startDate, endDate, maxStudent, batch_format,price} = payload
+    const {course, batchName, startDate, endDate, maxStudent, batch_format,price, instructor, schedule} = payload
 
    const courseexist = await Course.findById(course)
    if(!courseexist) throw new AppError("course donot exist", 404)
 
-   const instructor = await Users.findById(user_id)
-   if(!instructor) throw new AppError("instructor donot exist", 404)
 
    if(new Date(startDate) >= new Date(endDate)) {
     throw new AppError("end date must be after the start date")
@@ -28,11 +26,8 @@ export const createbatch = async(payload, user_id)=>{
    start.setHours(0, 0, 0, 0);
 
     if (start < today) {
-        return res.status(400).json({
-            success: false,
-            message: 'Start date cannot be in the past.'
-          });
-        }
+        throw new AppError('Start date cannot be in the past.', 400)
+    }
 
     let status = 'upcoming';
         
@@ -42,18 +37,59 @@ export const createbatch = async(payload, user_id)=>{
             status = 'ongoing'; 
         }
 
-   if(maxStudent <= 0 ) throw new AppError('max student must be geater than 0')
+     if(maxStudent <= 0 ) throw new AppError('max student must be geater than 0')
+
+    
+     let scheduleToSave = undefined
+     if (schedule) {
+         const validDays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+         const { days, time } = schedule
+         if (!Array.isArray(days) || days.length === 0) throw new AppError('schedule.days must be a non-empty array', 400)
+         const invalid = days.find(d => !validDays.includes(d))
+         if (invalid) throw new AppError(`invalid day in schedule: ${invalid}`, 400)
+         if (!time || typeof time !== 'string') throw new AppError('schedule.time must be a string', 400)
+         scheduleToSave = { days, time }
+     }
+  
+     if (!scheduleToSave) {
+         throw new AppError('schedule is required and must include days and time', 400)
+     }
+
+        // normalize and validate batch_format
+        const validFormats = ["weekday-intensive","weekend-only","self-placed"]
+        let formatToUse = undefined
+        if (batch_format && typeof batch_format === 'string') {
+            const normalized = batch_format.trim().toLowerCase()
+            // map common variants
+            const map = {
+                'weekdayintensive': 'weekday-intensive',
+                'weekday-intensive': 'weekday-intensive',
+                'weekday intensive': 'weekday-intensive',
+                'weekendonly': 'weekend-only',
+                'weekend-only': 'weekend-only',
+                'weekend only': 'weekend-only',
+                'selfplaced': 'self-placed',
+                'self-placed': 'self-placed',
+                'self placed': 'self-placed'
+            }
+            const key = normalized.replace(/\s+/g, '')
+            formatToUse = map[key] || map[normalized] || map[batch_format] || undefined
+        }
+        if (!formatToUse) {
+            throw new AppError('batch_format is required and must be one of: ' + validFormats.join(', '), 400)
+        }
 
     const batch = await Batch.create({
         course: course,       
-        instructor: user_id, 
+        instructor, 
         batchName,
         startDate,
         endDate,
         status,
         maxStudent,
-        batch_format,
+        batch_format: formatToUse,
         price,
+        schedule: scheduleToSave,
     })
       await batch.save()
 
@@ -70,6 +106,14 @@ export const getAllbatches = async (query) => {
     .sort({ createdAt: -1 });
 
   return batches;
+}
+
+export const getallbatchofinstructor = async(id)=>{
+    const batches = await Batch.find({instructor: id, isDeleted: false}) .populate('course', 'title')
+        .populate('instructor', 'firstname lastname')
+        .sort({ createdAt: -1 });
+
+    return batches
 }
 
 
@@ -201,8 +245,6 @@ export const getstat = async()=>{
     }
 }
 
-
-
 export const totalsessionofbatch = async(batchid)=>{
     const session = await Session.find({batch : batchid})
     const TotalSession = session.length
@@ -213,8 +255,6 @@ export const totalsessionofbatch = async(batchid)=>{
 
 
 export const getBatchAverageAttendance = async (batchId) => {
-    
-    
     const totalattendance = await Attendence.countDocuments({batch: batchId, isDeleted: false})
     const totalpresent = await Attendence.countDocuments({batch: batchId ,status: 'present', isDeleted: false})
 
@@ -223,13 +263,7 @@ export const getBatchAverageAttendance = async (batchId) => {
             "averageAttendance" : 0
         }
     }
-    
-    
-    const averageAttendance = (totalpresent/totalattendance) * 100
-    
-    
-    return Math.round(averageAttendance)
-
+    return Math.round((totalpresent/totalattendance) * 100)
 };
 
 
@@ -364,14 +398,13 @@ export const getWeeklyAttendanceTrends = async (batchId) => {
     const objectId = new mongoose.Types.ObjectId(batchId);
 
     const trends = await Attendence.aggregate([
-        // 1. Filter records for the specific batch
+
         {
             $match: {
                 batch: objectId,
                 isDeleted: false
             }
         },
-        // 2. Group by week of the year
         {
             $group: {
                 _id: { $week: "$markedAt" },
@@ -381,11 +414,9 @@ export const getWeeklyAttendanceTrends = async (batchId) => {
                 totalCount: { $sum: 1 }
             }
         },
-        // 3. Sort chronologically by week
         {
             $sort: { "_id": 1 }
         },
-        // 4. Project the percentage (intensity)
         {
             $project: {
                 week: "$_id",
@@ -399,11 +430,6 @@ export const getWeeklyAttendanceTrends = async (batchId) => {
         }
     ]);
 
-    // Return aggregated results or a baseline fallback if no data exists
-    return trends.length > 0 ? trends : [
-        { week: 1, intensity: 45 },
-        { week: 2, intensity: 65 },
-        { week: 3, intensity: 50 },
-        { week: 4, intensity: 80 }
-    ];
+    return trends
+    
 };

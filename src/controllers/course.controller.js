@@ -1,5 +1,6 @@
 import { createCourse , deletecourse, getallcourse, getcourse,getcoursedashboard,getnewCourse, getsinglecoursedetail, modifycourse} from "../services/courseservice.js"
 import { createbatch } from "../services/batch.service.js"
+import AppError from '../utils/customerror.handler.js'
 import mongoose from "mongoose"
 import Course from "../models/course.model.js"
 import User from "../models/user.model.js"
@@ -7,49 +8,49 @@ import Batch from "../models/batch.model.js"
 
 
 export const createcourse = async(req, res, next)=>{
-    
-    const session = await mongoose.startSession()
-    session.startTransaction()
-
     try {
         const {title, description, durationInWeeks, passingScore, batchName,
-             price, startDate, endDate, maxStudent, batch_format, instructor } = req.body
+            price, startDate, endDate, maxStudent, batch_format, instructor, schedule, scheduleDays, scheduleTime } = req.body
 
         const coursePayload = {title, description, durationInWeeks, passingScore}
 
-        const existingCourse = await Course.findOne({ title }).session(session);
+        const existingCourse = await Course.findOne({ title });
         if (existingCourse) {
             return res.status(400).json({ success: false, message: 'Course already exists.' });
         }
 
-        const existingInstructor = await User.findById(instructor).session(session);
+        const existingInstructor = await User.findById(instructor);
         if (!existingInstructor) {
             return res.status(400).json({ success: false, message: 'Assigned instructor not found.' });
         }
 
         const new_course = await createCourse(coursePayload, req.user._id)
-        await new_course.save({session})
+        await new_course.save()
 
-         const batchpayload = {course: new_course._id,batchName, startDate, endDate, maxStudent, batch_format, price, instructor}
+        // build schedule object (prefer explicit schedule, fall back to scheduleDays/scheduleTime)
+        let scheduleObj = schedule || undefined
+        if (!scheduleObj && scheduleDays && scheduleDays.length) {
+            scheduleObj = { days: scheduleDays, time: scheduleTime }
+        }
 
-         const batch = await createbatch(batchpayload, req.user._id)
+        if (!scheduleObj) {
+            throw new AppError('schedule is required when creating a course batch', 400)
+        }
 
-         await batch.save({session})
+        const batchpayload = {course: new_course._id,batchName, startDate, endDate, maxStudent, batch_format, price, instructor, schedule: scheduleObj}
 
-    await session.commitTransaction()
-    session.endSession()
+        const batch = await createbatch(batchpayload, req.user._id)
+        await batch.save()
 
-    res.status(201).json({
-        success: true,
-        message: 'course and batch created successfully',
-        data: new_course
-    })
+        res.status(201).json({
+            success: true,
+            message: 'course and batch created successfully',
+            data: new_course
+        })
 
     } catch (error) {
-        await session.abortTransaction()
-        session.endSession()
         next(error)
-    }  
+    }
 }
 
 export const getallCourse  = async(req, res, next) =>{

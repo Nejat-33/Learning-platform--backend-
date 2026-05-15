@@ -11,9 +11,9 @@ export const createSession = async(batchid, instructorid) =>{
     const batch = await Batch.findById(batchid)
     if(!batch) throw new AppError('batch is not found', 404)
     
-    if(batch.status !== 'ongoing'){
-        throw new AppError('batch is not available')
-    }
+   if(batch.status !== 'ongoing' && batch.status !== 'active'){
+    throw new AppError('batch is not available')
+}
     
     const Instructor = await User.findById(instructorid)
     if(!Instructor) throw new AppError('instructor is not found', 404)
@@ -73,7 +73,21 @@ export const getSessionbybatch = async(batchid)=>{
     if(!batch) {
         throw new AppError('batch is not found', 404)
     }
-    const session = await Session.findOne({batch: batchid}).populate('instructor', 'name email').sort({date: -1})
+    const session = await Session.find({batch: batchid}).populate('instructor', 'firstname lastname')         // firstname/lastname not name
+        .sort({ createdAt: -1 })                             // createdAt not date
+        .lean();
+
+    return session
+}
+
+export const getSessionbatch = async(batchid)=>{  
+    const batch = await Batch.findOne({_id: batchid})
+    if(!batch) {
+        throw new AppError('batch is not found', 404)
+    }
+    const session = await Session.find({batch: batchid}).populate('instructor', 'firstname lastname')         // correct field names
+        .sort({ createdAt: -1 })                             // correct sort field
+        .lean();
 
     return session
 }

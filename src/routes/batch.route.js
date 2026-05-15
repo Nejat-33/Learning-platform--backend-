@@ -3,7 +3,9 @@ import { createBatch, deleteBatch, getAllBatches, getBatchforcourse,
     getSinglebatch, updateBatch, get_upcomingBatches, getAllbatch_course, 
     getFilling_batch, getStatofbatch, batchAverageAttendanceController, Singlebatchstat, 
     getAverageAttendedStudentsController,
-    getWeeklyTrendsController} from "../controllers/batch.controller.js";
+    getWeeklyTrendsController,
+    getmybatch,
+    getbatchInst} from "../controllers/batch.controller.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
 import rolevalidate from "../middlewares/role.middleware.js";
 import { getAverageAttendedStudents } from "../services/batch.service.js";
@@ -25,5 +27,8 @@ batchRoute.get('/averageattendance/:batchId', batchAverageAttendanceController)
 batchRoute.get("/singlebatchstat/:batchid", Singlebatchstat)
 batchRoute.get('/avgAttendancecount/:batchId', getAverageAttendedStudentsController)
 batchRoute.get('/getWeeklyTrends/:batchId', getWeeklyTrendsController)
+batchRoute.get('/mybatch',authenticate, getmybatch)
+batchRoute.get('/mybatchInst',authenticate, rolevalidate('instructor'),getbatchInst)
+
 
 export default batchRoute

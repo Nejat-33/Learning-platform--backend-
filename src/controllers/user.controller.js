@@ -1,5 +1,5 @@
 import { modifycourse } from "../services/courseservice.js"
-import {  countActiveuser, deleteuser, getAlluser, getinstructor, getme, getuser } from "../services/user.service.js"
+import {  countActiveuser, deleteuser, getAlluser, getinstructor, getme, getuser, modifyprofile } from "../services/user.service.js"
 
 
 export const getalluser = async(req, res, next) =>{
@@ -59,15 +59,27 @@ export const deleteUser = async(req, res, next) =>{
     }
 }
 
+
 export const updateProfile = async (req, res, next) =>{
     try {
-        const {id} = req.params
-        const result = await modifycourse(id, req.body)
+        const id = req.user._id; 
+        
+        const allowedFields = ['firstname', 'lastname', 'phone', 'instructorProfile','profileImage'];
+        const updateData = {};
+        allowedFields.forEach(field => {
+            if (req.body[field] !== undefined) updateData[field] = req.body[field];
+        });
+
+        if (req.file) {
+            updateData.profileImage = req.file.path || req.file.filename;
+        }
+
+        const result = await modifyprofile(id, updateData);
 
         res.status(200).json({
             sucess: true,
             message: "successfully modified profile",
-            data: result
+            data:{user: result}
         })
     } catch (error) {
         next(error)
@@ -94,6 +106,18 @@ export const getallinstructor = async(req, res, next)=>{
         res.status(200).json({
             success: true,
             data: instructor
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const getTopinst = async(req, res, next)=>{
+    try {
+        const instr = await getinstructor()
+        res.status(200).json({
+            success: true,
+            data: instr
         })
     } catch (error) {
         next(error)

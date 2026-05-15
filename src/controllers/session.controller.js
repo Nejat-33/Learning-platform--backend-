@@ -54,6 +54,24 @@ export const getSessionBybatch = async(req, res, next) =>{
     
 }
 
+
+export const getSessionbatch = async(req, res, next) =>{
+    try {
+         const {batchid} = req.params
+     const result = await getSessionbatch(batchid)
+
+     res.status(200).json({
+        success: true,
+        message: 'session in this batch fetched',
+        data: result
+     })
+    } catch (error) {
+        next(error)
+    }
+    
+}
+
+
 export const getsingleSession = async(req, res, next)=>{
     try {
          const {id} = req.params

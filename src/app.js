@@ -40,7 +40,7 @@ app.use('/api/attendance', attendenceRoute)
 app.use('/api/analytics',  analyticsRouter)
 app.use('/api/dashboard', dashboardRoute)
 app.use('/api/batch', batchRoute)
-app.use('/api/resourses', Rerouter)
+app.use('/api/resources', Rerouter)
 app.use('/api/inquiry', Inqrouter)
 
 app.use(errorMiddleware)

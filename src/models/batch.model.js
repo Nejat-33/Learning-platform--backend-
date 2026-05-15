@@ -53,13 +53,12 @@ const BatchSchema = new mongoose.Schema({
         default: 0
     },
     graduates: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Users",
+        type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Users" }],
         default: []
     },
     status: {
        type: String,
-       enum: ['upcoming', 'ongoing', 'completed', "cancelled", "active"],
+       enum: ['upcoming', 'ongoing', 'completed', "cancelled"],
        default: "upcoming",
        index: true
     },
@@ -87,6 +86,6 @@ const BatchSchema = new mongoose.Schema({
 }, {timestamps: true})
 
 
-const Batch = mongoose.model('Batch', BatchSchema)
+const Batch = mongoose.model('batch', BatchSchema)
 
 export default Batch
