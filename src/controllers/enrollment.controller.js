@@ -72,19 +72,25 @@ export const getEnrollment = async(req, res , next)=>{
 
 }
 
-export const getmyenrollment = async(req, res, next)=>{
+export const getmyenrollment = async (req, res, next) => {
     try {
-          const result = await Getmyenrollment(req.user._id)
-     res.status(200).json({
-        sucess: true,
-        message: 'sucessfully get enrollment data',
-        data: result
-    })
+        // Ensure middleware appended req.user securely
+        if (!req.user?._id) {
+            return res.status(401).json({ success: false, message: "Unauthorized access payload" });
+        }
+
+        const result = await Getmyenrollment(req.user._id);
+        
+        res.status(200).json({
+            success: true, // fixed typo from 'sucess'
+            message: 'Successfully retrieved enrollment data',
+            count: result.length, // Let the frontend know how many items there are (e.g., 0)
+            data: result
+        });
     } catch (error) {
-        next(error)
+        next(error);
     }
-  
-}
+};
 
 
 export const modifyEnrollment = async(req, res, next)=>{

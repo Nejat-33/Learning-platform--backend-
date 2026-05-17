@@ -144,16 +144,18 @@ export const Getenrollment = async()=>{
     return enrollment
 }
 
-export const Getmyenrollment = async(userid)=>{
-    const user = await User.findById(userid)
-    if(!user){
-        throw new AppError('the user is not found', 404)
+export const Getmyenrollment = async (userid) => {
+    const user = await User.findById(userid);
+    if (!user) {
+        throw new AppError('The user was not found', 404);
     }
-    const enrollment = await Enrollment.findOne({student: userid})
-    if(!enrollment) throw new AppError('the user is not enrolled', 404)
+
+    // Use .find() so it returns an array of all their enrollments
+    const enrollments = await Enrollment.find({ student: userid });
     
-   return enrollment
-}
+    // Do NOT throw an error if it's empty. Just return the empty array [] safely.
+    return enrollments; 
+};
 
 
 export const modifyenrollment = async(id, query)=>{

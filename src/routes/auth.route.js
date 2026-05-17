@@ -1,7 +1,7 @@
 import express from 'express'
 import passport from 'passport'
 import { authenticate, googleLogin, login, logout, refreash} from '../middlewares/auth.middleware.js'
-import { signup } from '../controllers/auth.controller.js'
+import { getMe, setUserRole, signup } from '../controllers/auth.controller.js'
 import { googleAuthCallback } from '../controllers/auth.controller.js'
 import { changePassword, forgotPassword, resetPassword } from '../controllers/password.controller.js'
 const authRouter = express.Router()
@@ -30,17 +30,14 @@ authRouter.get('/google/callback', (req, res, next) => {
 });
 
 
-authRouter.get('/me', authenticate, (req, res)=>{
-    res.status(200).json({
-        success: true,
-        data: {user: req.user}
-    })
-})
+authRouter.get('/me', authenticate, getMe)
 authRouter.get('/test-forgot', (req, res) => res.send("Route is alive!"));
 authRouter.patch('/forgotpassword', forgotPassword)
 authRouter.patch('/changepassword', authenticate, changePassword)
 authRouter.patch('/resetpassword/:token', resetPassword)
 authRouter.post('/refresh', refreash)
+
+authRouter.patch('/setrole', authenticate, setUserRole);
 
 
 export default authRouter

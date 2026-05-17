@@ -32,15 +32,16 @@ passport.use(
             }
 
             const newUser = await User.create({
-               firstname: profile.name?.givenName || profile.displayName.split(' ')[0],
-               lastname: profile.name?.familyName || profile.displayName.split(' ')[1] || ' ',
-                email: email,
-                googleId: profile.id,
-                provider: 'google',
-                isVerified: true,
-                password: undefined,
-                 passwordConfirm: undefined
-            });
+    firstname: profile.name?.givenName || profile.displayName.split(' ')[0],
+    lastname: profile.name?.familyName || profile.displayName.split(' ')[1] || ' ',
+    email: email,
+    googleId: profile.id,
+    provider: 'google',
+    isVerified: true,
+    password: undefined,
+    passwordConfirm: undefined,
+    role: 'pending'  
+});
 
             return done(null, newUser);
                 

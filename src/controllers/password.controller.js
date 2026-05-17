@@ -34,6 +34,9 @@ const message = `Forgot your password?\n Reset it here:\n ${resetURL}.\n This li
         user.passwordResetToken = undefined;
         user.passwordResetExpire = undefined;
         await user.save({ validateBeforeSave: false });
+         console.log('Full email error:', JSON.stringify(err, null, 2));
+    console.log('Error message:', err.message);
+    console.log('Error code:', err.code);
         res.status(500).json({ status: err, message: "email sending fail." });
     }
 };

@@ -32,7 +32,8 @@ export const createSendtoken = (user, statuscode, res)=>{
          message: "Authentication successful",
          accessToken,
          refreshToken,
-         user
+         user,
+         hasCompletedOnboarding: user.hasCompletedOnboarding
     })
 
 } 

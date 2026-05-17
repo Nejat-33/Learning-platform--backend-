@@ -44,16 +44,24 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['admin', 'instructor', 'student'],
-        default: 'student',
+        enum: ['admin', 'instructor', 'student', 'pending'],
+        default: 'pending',
         index: true
+    },
+    isApproved: { 
+        type: Boolean, 
+        default: function() {
+
+            return this.role !== 'instructor'; 
+        }
     },
     phone: {
         type: String,
     },
     instructorProfile: {
     bio: { type: String, default: "" },
-    specialty: { type: String, default: "" } 
+    specialty: { type: String, default: "" } ,
+    experienceYears : {type: Number, default: 0}
     },
     profileImage:{
         type: String,
@@ -68,6 +76,10 @@ const UserSchema = new mongoose.Schema({
         select: false,
         unique: true,
         sparse: true
+    },
+    hasCompletedOnboarding: { 
+        type: Boolean, 
+        default: false // Every new user starts as false!
     },
     passwordResetToken: String,
 

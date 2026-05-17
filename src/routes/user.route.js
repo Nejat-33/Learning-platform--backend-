@@ -1,5 +1,5 @@
 import express from 'express'
-import { deleteUser, getalluser, Getme, getUser, CountActiveuser, getallinstructor, getTopinst } from '../controllers/user.controller.js'
+import { deleteUser, getalluser, Getme, getUser, CountActiveuser, getallinstructor, getTopinst, saveOnboardingInfo } from '../controllers/user.controller.js'
 import { authenticate } from '../middlewares/auth.middleware.js'
 import rolevalidate from '../middlewares/role.middleware.js'
 import multer from 'multer'
@@ -17,5 +17,6 @@ userRoute.get('/getActiveuser', authenticate,rolevalidate('admin'), CountActiveu
 userRoute.get('/getinstructors',authenticate, rolevalidate('admin'), getallinstructor)
 userRoute.get('/getinstructorforgallery', getTopinst)
 userRoute.patch('/updateprofile', authenticate, upload.single('profileImage'), updateProfile)
+userRoute.put('/complete-onboarding', authenticate, rolevalidate('instructor'), saveOnboardingInfo)
 export default userRoute
 

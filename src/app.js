@@ -17,6 +17,7 @@ import analyticsRouter from './routes/analytics.route.js'
 import cors from 'cors'
 import Rerouter from './routes/resource.route.js'
 import Inqrouter from './routes/inquiry.route.js'
+import adminrouter from './routes/admin.route.js'
 
 const app = express()
 
@@ -42,6 +43,8 @@ app.use('/api/dashboard', dashboardRoute)
 app.use('/api/batch', batchRoute)
 app.use('/api/resources', Rerouter)
 app.use('/api/inquiry', Inqrouter)
+app.use('/api/admin', adminrouter)
+
 
 app.use(errorMiddleware)
 app.use(notFoundmiddleware)

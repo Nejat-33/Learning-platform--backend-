@@ -1,6 +1,6 @@
 import { modifycourse } from "../services/courseservice.js"
 import {  countActiveuser, deleteuser, getAlluser, getinstructor, getme, getuser, modifyprofile } from "../services/user.service.js"
-
+import User from "../models/user.model.js"
 
 export const getalluser = async(req, res, next) =>{
     try {
@@ -123,3 +123,26 @@ export const getTopinst = async(req, res, next)=>{
         next(error)
     }
 }
+
+export const saveOnboardingInfo = async (req, res, next) => {
+    try {
+        const { bio, speciality, experienceYears} = req.body;
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user._id,
+            {
+                hasCompletedOnboarding: true, 
+                instructorProfile: { bio, speciality, experienceYears }
+            },
+            { new: true }
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "Profile onboarding completed successfully!",
+            user: updatedUser
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
