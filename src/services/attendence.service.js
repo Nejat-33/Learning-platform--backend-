@@ -120,33 +120,64 @@ export const attendanceheatmap = async () => {
 };
 
 
-
 export const markAbsentStudents = async (sessionId, batchid) => {
+  try {
+    const students = await Enrollment.find({ batch: batchid }).select("student");
 
-  const students = await Enrollment.find({ batch: batchid}).select("student");
+    const presentRecords = await Attendence.find({ session: sessionId });
+    const presentStudentIds = presentRecords.map(r => r.student.toString());
 
-  const presentRecords = await Attendence.find({ session: sessionId });
+    const absentStudents = students
+      .filter(enrollment => {
+        const studentIdStr = enrollment.student.toString(); 
+        const isPresent = presentStudentIds.includes(studentIdStr);
+        return !isPresent; 
+      })
+      .map(enrollment => ({
+        batch: batchid,
+        student: enrollment.student,
+        session: sessionId,
+        status: 'absent'
+      }));
 
-  const presentStudentIds = presentRecords.map(r => r.student.toString());
+    if (absentStudents.length === 0) {
+      console.log("No absent students to record for this session.");
+      return;
+    }
 
-  
-  const absentStudents = students
-        .filter(enrollment => {
-            const studentIdStr = enrollment.student.toString(); 
-            const isPresent = presentStudentIds.includes(studentIdStr);
-  
-            return !isPresent; 
-        })
-        .map(enrollment => ({
-            batch: batchid,
-            student: enrollment.student,
-            session: sessionId,
-            status: 'absent'
-        }));
+    console.log(`Processing ${absentStudents.length} absent students safely...`);
 
-  
-  if (absentStudents.length > 0) {
-       const attendendance=  await Attendence.insertMany(absentStudents);  
-       console.log("attendence ", attendendance);
+    for (const record of absentStudents) {
+      try {
+        const existingRecord = await Attendence.findOne({
+          batch: record.batch,
+          student: record.student,
+          session: record.session
+        });
+
+        if (existingRecord) {
+          if (existingRecord.status !== 'absent') {
+            existingRecord.status = 'absent';
+            await existingRecord.save();
+          }
+        } else {
+          await Attendence.create(record);
+        }
+      } catch (innerError) {
+        if (innerError.code === 11000) {
+          console.log(`Handled duplicate constraint gracefully for student: ${record.student}`);
+          await Attendence.updateOne(
+            { batch: record.batch, student: record.student, session: record.session },
+            { $set: { status: 'absent' } }
+          );
+        } else {
+          throw innerError;
+        }
+      }
+    }
+
+    console.log("Attendance processing step finalized smoothly.");
+  } catch (globalError) {
+    console.error("Critical block failure in markAbsentStudents:", globalError.message);
   }
 };

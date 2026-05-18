@@ -10,7 +10,7 @@ sessionRouter.get('/getsingle/:id', authenticate,rolevalidate('admin', 'instruct
 sessionRouter.get('/batch/:batchid', authenticate ,rolevalidate('admin', 'instructor') ,getSessionBybatch)
 sessionRouter.get('/allbatch/:batchid', authenticate ,rolevalidate('admin', 'instructor') ,getSessionbatch)
 sessionRouter.post('/create/:batchid', authenticate, rolevalidate('admin','instructor'), createsession)
-sessionRouter.patch('/close/:id',authenticate,rolevalidate('admin', 'instructor') , closesession)
+sessionRouter.patch('/close/:id',authenticate,rolevalidate('instructor', 'admin') , closesession)
 
 
 

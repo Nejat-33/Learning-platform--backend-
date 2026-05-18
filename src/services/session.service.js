@@ -49,19 +49,28 @@ export const endSession = async (sessionid, user) =>{
     if(!session) throw new AppError('session is not found', 404)
 
     if(!session.isActive) throw new AppError('session is already closed', 400)
+const instructorId = session.instructor && session.instructor._id 
+        ? session.instructor._id.toString() 
+        : session.instructor.toString();
 
-    const isInstructor = session.instructor._id.toString() === user._id.toString()
+        const currentUserId = user._id ? user._id.toString() : user.toString();
+    const isAdmin = user.role === 'admin';
 
-    const isAdmin = user.role === 'admin'
+    const isInstructor = instructorId === currentUserId;
+
+console.log("=== CLOSING SESSION DEBUG ===");
+    console.log("Instructor ID on Session:", instructorId.toString());
+    console.log("Logged-In User ID:", currentUserId.toString());
+    console.log("Is Instructor?:", isInstructor, "| Is Admin?:", isAdmin);
+
 
     if(!isInstructor && !isAdmin){
-        throw new AppError('you dont have a permission')
+        throw new AppError('you dont have a permission to close this session.', 403)
     }
  
     session.isActive = false
     await session.save()
-    console.log("gonna mark absent student");
-    
+    console.log("Session deactivated successfully. Marking absent students...");
     await markAbsentStudents(sessionid, session.batch)
     await updateSessionAnalytics(session.batch)
     return session

@@ -34,8 +34,8 @@ export const initializePayment = async (enrollmentId, user) => {
       last_name: user.lastname,
       tx_ref,
 
-      callback_url: "http://localhost:5000/api/payment/verify",
-      return_url: "http://localhost:3000/payment-success"
+      callback_url: "http://localhost:5500/api/payment/verify",
+      return_url: `http://localhost:5173/payment-success?tx_ref=${tx_ref}`
     },
     {
       headers: {

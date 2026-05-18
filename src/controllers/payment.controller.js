@@ -2,19 +2,37 @@ import Enrollment from "../models/enrollment.model.js";
 import Payment from "../models/payment.model.js";
 import { updateEnrollmentAnalytics, updateRvenuAnalytics } from "../services/analytics.service.js";
 import { initializePayment, verifyPayment } from "../services/payment.service.js";
-
+import axios from 'axios'
 
 
 export const checkout = async (req, res) => {
+  try{
   const { enrollmentId } = req.body;
 
+console.log("Checkout Triggered for Enrollment:", enrollmentId);
+    console.log("User initiating checkout:", req.user);
+
+if (!req.user) {
+      return res.status(401).json({ status: "fail", message: "User context missing from request" });
+    }
   const url = await initializePayment(enrollmentId, req.user);
 
   res.status(200).json({
     status: "success",
     url
   });
+} catch (error) {
+    console.error("CRITICAL CHECKOUT ERROR:", error.message);
+    if (error.response) {
+      console.error("Chapa API Rejection Payload:", error.response.data);
+    }
+    
+    return res.status(500).json({
+      status: "error",
+      message: error.message || "Internal server billing failure"
+    });
 };
+}
 
 
 
@@ -73,4 +91,6 @@ export const verify = async (req, res) => {
     status: "fail",
     message: "Payment not successful"
   });
-};
+}
+
+
